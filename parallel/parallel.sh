@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #Compilação de Código.
-mpicxx -g -Wall odd_even_prl.cpp -o odp
+mpicxx -g -Wall -std=c++11 odd_even_prl.cpp -o odp
 
 #OBRIGATÓRIO: Laço de iteração para resgate dos tempos de acordo com "cores" e "size"
 
@@ -10,7 +10,7 @@ mpicxx -g -Wall odd_even_prl.cpp -o odp
 
 	for cores in 2 4 8 #números de cores utilizados
 	do
-			for size in 105000 120000 125000 135000 #tamanho do problema
+			for size in 120000 135000 150000 168000  #tamanho do problema
 			do   	
 				echo -e "\n$cores\t$size\t\t\c" >> "parallel_cores_samples.txt" 
 

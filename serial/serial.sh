@@ -10,7 +10,7 @@ g++ -g -Wall -std=c++11 odd_even_serial.cpp -o ods
 
 	for cores in 1 # números de cores utilizados --> no código serial apenas 1.
 	do
-			for size in 105000 120000 125000 135000 #tamanho do problema
+			for size in 120000 135000 150000 168000 #tamanho do problema
 			do   	
 				echo -e "\n$cores\t$size\t\t\c" >> "serial_cores_samples.txt" 
 
