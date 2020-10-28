@@ -104,7 +104,7 @@ void PHASE( long int SEND_RANK, long int RCV_RANK, long int * arr, int size, MPI
 {
     // Get the current proc.
     int current_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &current_rank);
+    MPI_Comm_rank(COMM, &current_rank);
 
     // temporary list to make possible the "merge"
     long int * temp_arr = new long int[size];
@@ -133,19 +133,40 @@ void PHASE( long int SEND_RANK, long int RCV_RANK, long int * arr, int size, MPI
         // MERGE ZONE
         // =============================================
         // Merge to aux_arr with order.
-        long int itr_one = 0;
-        long int itr_two = 0;
         
-        for( int i = 0; i < size*2; i++ )
+        long int * first = &aux_arr[0];
+        long int * last = &aux_arr[size*2];
+
+        long int * runner_1 = &arr[0];
+        long int * runner_2 = &temp_arr[0];
+
+        while( first != last )
         {
-            if( temp_arr[itr_one] < arr[itr_two] )
+            // Case 1 and 2 --> complete the rest of the merged list 
+            // with the remaining values of other list.
+            if( runner_1 == &arr[size] )
             {
-                aux_arr[i] = temp_arr[itr_one++]; 
+                while( runner_2 != &temp_arr[size] ) // case 1
+                {
+                    *first++ = *runner_2++;
+                }
+            }
+            else if( runner_2 == &temp_arr[size] ) // case 2
+            {
+                while( runner_1 != &arr[size] )
+                {
+                    *first++ = *runner_1++;
+                }
+            }
+            else if( *runner_1 < *runner_2 )
+            {
+                *first++ = *runner_1++;
             }
             else
             {
-                aux_arr[i] = arr[itr_two++];
+                *first++ = *runner_2++;
             }
+
         }
         // =============================================
         
@@ -156,17 +177,18 @@ void PHASE( long int SEND_RANK, long int RCV_RANK, long int * arr, int size, MPI
 
         for( int i = 0; i < size; i++ )
         {
-            arr[i] = aux_arr[i];
-
-            temp_arr[itr] = aux_arr[itr];
+            temp_arr[i] = aux_arr[i];
+           
+            arr[i] = aux_arr[itr];
 
             itr++;    
         }
         // =============================================
+
         
         delete[] aux_arr;
 
-        // Sending back the list 
+        // Sending back the list with lowest values. 
         MPI_Send( temp_arr, size, MPI_LONG, SEND_RANK, 1, COMM ); 
 
         delete[] temp_arr;
@@ -226,7 +248,7 @@ int main ( int argc, char *argv[] )
 
     if( my_rank == 0 )
     {  
-        print( arr, size ); // printing.
+        //print( arr, size ); // printing.
     }
 
 
@@ -251,7 +273,7 @@ int main ( int argc, char *argv[] )
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     for( int proc_itr = 1; proc_itr <= comm_sz; proc_itr++ )
     {
-         if( my_rank % 2 != 0 ) // Odd
+         if( ( my_rank + proc_itr ) % 2 == 0 ) // Odd
          {
             if( my_rank < comm_sz - 1 )
             {
@@ -281,35 +303,17 @@ int main ( int argc, char *argv[] )
     MPI_Gather( local_arr, local_size, MPI_LONG, final_arr, local_size, MPI_LONG, 0, MPI_COMM_WORLD );
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    
+   
     if( my_rank == 0 )
     {
-        /*
-        // Getting final exec time
-        double final_time = local_time;
 
-        for( int proc = 1; proc < comm_sz; proc++ )
-        {
-            MPI_Recv( &local_time, sizeof(local_time), MPI_DOUBLE, proc, 3, MPI_COMM_WORLD, MPI_STATUS_IGNORE );
-
-            if( final_time < local_time )
-            {
-                final_time = local_time;
-            }
-        }*/
-
-        
-        print( final_arr, size ); // printing.
+        // for correction. 
+        //print( final_arr, size ); // printing.
 
         std::cout << std::fixed
                   << std::setprecision(3) 
                   << local_time << std::endl;
 
-    }
-    else
-    {/*
-        // Sending local time to root.
-        MPI_Send( &local_time, sizeof(local_time), MPI_DOUBLE, 0, 3, MPI_COMM_WORLD );*/
     }
 
     delete[] final_arr; // freeing memory.
