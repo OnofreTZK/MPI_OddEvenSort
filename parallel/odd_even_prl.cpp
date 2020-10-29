@@ -248,7 +248,7 @@ int main ( int argc, char *argv[] )
 
     if( my_rank == 0 )
     {  
-        //print( arr, size ); // printing.
+        print( arr, size ); // printing.
     }
 
 
@@ -308,7 +308,7 @@ int main ( int argc, char *argv[] )
     {
 
         // for correction. 
-        //print( final_arr, size ); // printing.
+        print( final_arr, size ); // printing.
 
         std::cout << std::fixed
                   << std::setprecision(3) 
